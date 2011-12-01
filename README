@@ -1,0 +1,14 @@
+
+# Ubuntu 11.04
+sudo apt-get install build-essential libevent-dev libyaml-dev
+
+# Python Package isolation
+virtualenv --no-site-packages .
+source bin/activate
+
+# gevent wsgi server is needed by unit tests
+pip install nose webob nltk gevent
+
+# Run unit tests from the project root directory
+nosetests
+
