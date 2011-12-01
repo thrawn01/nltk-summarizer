@@ -17,6 +17,6 @@ class TestSummarizer(unittest.TestCase):
                             Detectives are working to determine the relationship of the suspected shooter and the victims, he said.  """
        
         # Return 1 sentence from the article
-        self.assertEquals(summarizer.summarize(sentence=1, text=new_article1),'')
+        self.assertEquals(summarizer.summarize(sentence=1, text=news_article1),'')
 
 
