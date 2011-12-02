@@ -1,32 +1,59 @@
 
 from webob import Request
-import summarizer
+from summarizer import summarize
+from nltk.util import clean_html
 import re
 
 
 class SummarizerMiddleware(object):
-    """ WSGI Middleware runs HTML documents through a text summarizer if the path ends in .tldr """
+    """ WSGI Middleware runs HTML documents through a text summarizer if the path ends in .tldr 
+   
+        Attempts to summarize the HTML document by searching for frequently occuring words and selecting the
+        sentence with the highest frequency of common words as the summary
 
+        num_summaries - The total number of summary sentences output on the summary page
+        num_context_sentences - Number of sentences that make up the context of the summary sentence
 
-    def __init__(self, app):
+    """
+
+    def __init__(self, app, num_summaries=1, num_context_sentences=2):
+        self.context = num_context_sentences
+        self.number = num_summaries
         self.app = app
+
+
+    def summary_html(self, summaries):
+        body = ['<!DOCTYPE html>', '<html>', '<head><title>Too Long, Didn\'t read</title></head>', '<body>',]
+        # Iterate through the summaries
+        for key in summaries.keys():
+            paragraph = []
+            # Get the sentences with context
+            for sentence in summaries[key]:
+                if sentence == key:
+                    # The summary sentence should stand out
+                    paragraph.append('<bold>%s</bold>' % sentence)
+                else:
+                    paragraph.append(sentence)
+            # Append the paragraph to the body
+            body.append("<p>%s</p>" % ''.join(paragraph))
+            
+        body.append("</body></html>")
+        return ''.join(body)
 
 
     def __call__(self, env, start_response):
         # While not nessary, webob makes this easy
         request = Request(env)
         # Call up the middleware pipeline
-        resp = request.get_response(self.app)
+        response = request.get_response(self.app)
        
-        # Is the response body HTML? 
-        # This assumes, our wsgi app is doing sane things and setting a DOCTYPE
-        if re.match('<!DOCTYPE\W*?html', string):
+        # Is the body HTML? (This assumes, our wsgi app is doing sane things and setting a DOCTYPE)
+        if re.match('\s*?<!DOCTYPE\s*?html', response.body):
             # If the PATH ends in .tldr
-            if re.match('\.tldr\W?$', resp.path):
+            if re.search('\.tldr\s*?$', request.path):
                 # Summarize the html
-                resp.body = summarize_html(resp.body)
+                response.body = self.summary_html(summarize(self.number, self.context, clean_html(response.body)))
 
-        # Pass on the return value
-        return resp(env, start_response)
+        return response(env, start_response)
 
 

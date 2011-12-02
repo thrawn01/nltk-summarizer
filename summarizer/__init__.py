@@ -6,9 +6,10 @@ from collections import defaultdict
 import nltk.data
 import re
 
+# Here so these get initialized at module load time ( They take a while )
 sentence_tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 word_tokenizer = RegexpTokenizer('\w+')
-
+non_nouns = stopwords.words()
 
 def most_frequent_words(original_sentences, frequent_words, num_sentences):
     # Lower the case to make matching simple
@@ -49,7 +50,7 @@ def summarize(num_sentences, context_lines, text):
     # Separate all the words
     base_words = [word.lower() for word in word_tokenizer.tokenize(text)]
     # Remove non-nouns from the words collected
-    words = [word for word in base_words if word not in stopwords.words()]
+    words = [word for word in base_words if word not in non_nouns]
     # Use a frequency distribution to encode how often a word occurs 
     frequencies = FreqDist(words)
     # Now create a set of the most frequent words, limit top 100 words
