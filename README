@@ -9,6 +9,9 @@ source bin/activate
 # gevent wsgi server is needed by unit tests
 pip install nose webob nltk gevent
 
+# Get the word files for NLTK
+./get_words.py
+
 # Run unit tests from the project root directory
 nosetests
 
