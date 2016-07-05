@@ -1,6 +1,6 @@
 
 from nltk.tokenize import RegexpTokenizer
-from nltk.probability import FreqDist 
+from nltk.probability import FreqDist
 from nltk.corpus import stopwords
 from collections import defaultdict
 import nltk.data
@@ -11,10 +11,11 @@ sentence_tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 word_tokenizer = RegexpTokenizer('\w+')
 non_nouns = stopwords.words()
 
+
 def most_frequent_words(original_sentences, frequent_words, num_sentences):
     # Lower the case to make matching simple
     sentences_lowered = [sentence.lower() for sentence in original_sentences]
-    # create a map of sentences with the highest concentration of frequent words
+    # a map of sentences with the highest concentration of frequent words
     sentences = defaultdict(int)
     # For the most frequent words
     for word in frequent_words:
@@ -37,7 +38,7 @@ def get_context(needle, haystack, context):
     for i in range(0, len(haystack)):
         if haystack[i] == needle:
             prefix = i - context
-            if prefix < 0: 
+            if prefix < 0:
                 prefix = 0
             # Return the number of context sentences asked for
             return haystack[prefix:i+(context+1)]
@@ -45,24 +46,25 @@ def get_context(needle, haystack, context):
 
 def summarize(num_sentences, context_lines, text):
     result = {}
-    # Remove newlines from the text 
+    # Remove newlines from the text
     text = re.sub('\s*[\n|\r|\r\n]\s*', ' ', text)
     # Separate all the words
     base_words = [word.lower() for word in word_tokenizer.tokenize(text)]
     # Remove non-nouns from the words collected
     words = [word for word in base_words if word not in non_nouns]
-    # Use a frequency distribution to encode how often a word occurs 
+    # Use a frequency distribution to encode how often a word occurs
     frequencies = FreqDist(words)
     # Now create a set of the most frequent words, limit top 100 words
     frequent_words = [pair[0] for pair in frequencies.items()[:100]]
     # Separate all the sentences
     original_sentences = sentence_tokenizer.tokenize(text)
     # Find the sentences with the most frequent words
-    high_freq_sentences = most_frequent_words(original_sentences, frequent_words, num_sentences)
-    # Create a map with the High Frequence Sentences as the key, and the context as the value
+    high_freq_sentences = most_frequent_words(original_sentences,
+                                              frequent_words, num_sentences)
+    # Create a map with the High Frequence Sentences as the key,
+    # and the context as the value
     for sentence in high_freq_sentences:
         # Get context for each of the high freq sentences
-        result[sentence] = get_context(sentence, original_sentences, context_lines)
+        result[sentence] = get_context(sentence,
+                                       original_sentences, context_lines)
     return result
-
-

@@ -1,21 +1,24 @@
 # -*- coding: UTF-8 -*-
 from wsgiref.validate import validator
-import gevent, unittest, urllib2
 from summarizer.middleware import SummarizerMiddleware
 from gevent import pywsgi
 from gevent import monkey
+import gevent
+import unittest
+import urllib2
 
 # Monkey patch, so urllib2 works with gevent
 monkey.patch_all()
+
 
 class TestMiddleware(unittest.TestCase):
 
     @staticmethod
     def application(env, start_response):
         html = open('test/article.html').read()
-        start_response('200 OK', [('Content-Type', 'text/plain'),('content-length', str(len(html)))])
+        start_response('200 OK', [('Content-Type', 'text/plain'),
+                                  ('content-length', str(len(html)))])
         return [html]
-
 
     def setUp(self):
         self.app = validator(SummarizerMiddleware(self.application))
@@ -23,9 +26,9 @@ class TestMiddleware(unittest.TestCase):
         self.server.start()
         self.port = self.server.server_port
 
-
     def tearDown(self):
-        timeout = gevent.Timeout(0.5,RuntimeError("Timeout trying to stop server"))
+        timeout = gevent.Timeout(0.5,
+                                 RuntimeError("Timeout trying to stop server"))
         timeout.start()
         try:
             self.server.stop()
@@ -47,5 +50,3 @@ class TestMiddleware(unittest.TestCase):
             'Management staff members."Your government is torturing our prisoners, and we have never tortured your prisoner," he added.</p></body></html>'
 
         self.assertEquals(response, expected)
-   
-
